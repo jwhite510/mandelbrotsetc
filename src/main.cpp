@@ -24,6 +24,7 @@ struct PixelGrid
   }
   ~PixelGrid()
   {
+    cout << "PixelGrid destructor called" << endl;
     delete [] pixels;
   }
 
@@ -72,11 +73,17 @@ int main()
 
     // access by index
     int row = 100;
-    int col = 100;
-    pixelgrid.pixels[4*W*row + 4*col + 0] = 0;
-    pixelgrid.pixels[4*W*row + 4*col + 1] = 0;
-    pixelgrid.pixels[4*W*row + 4*col + 2] = 0;
-    pixelgrid.pixels[4*W*row + 4*col + 3] = 0;
+    for(int col=100; col < 120; col++) {
+      pixelgrid(row,col,0) = 255;
+      pixelgrid(row,col,1) = 0;
+      pixelgrid(row,col,2) = 0;
+      pixelgrid(row,col,3) = 255;
+    }
+
+    // pixelgrid.pixels[4*W*row + 4*col + 0] = 0;
+    // pixelgrid.pixels[4*W*row + 4*col + 1] = 0;
+    // pixelgrid.pixels[4*W*row + 4*col + 2] = 0;
+    // pixelgrid.pixels[4*W*row + 4*col + 3] = 0;
 
     texture.update(pixelgrid.pixels);
 
