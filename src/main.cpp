@@ -3,6 +3,32 @@
 
 using namespace std;
 
+struct PixelGrid
+{
+  sf::Uint8* pixels;
+  int W;
+  int H;
+  PixelGrid(int W_in, int H_in)
+  {
+    W = W_in;
+    H = H_in;
+    pixels = new sf::Uint8[W*H*4];
+  }
+  inline sf::Uint8 operator() (int row, int col, int color) const
+  {
+    return pixels[4*W*row + 4*col + color];
+  }
+  inline sf::Uint8& operator() (int row, int col, int color)
+  {
+    return pixels[4*W*row + 4*col + color];
+  }
+  ~PixelGrid()
+  {
+    delete [] pixels;
+  }
+
+};
+
 
 int main()
 {
@@ -14,7 +40,8 @@ int main()
   // shape.setFillColor(sf::Color::Red);
 
 
-  sf::Uint8* pixels = new sf::Uint8[W*H*4];
+  // sf::Uint8* pixels = new sf::Uint8[W*H*4];
+  PixelGrid pixelgrid(W, H);
 
   sf::Texture texture;
   texture.create(W, H); 
@@ -37,28 +64,26 @@ int main()
     colorvalue++;
 
     for(register int i = 0; i < W*H*4; i += 4) {
-      pixels[i] = colorvalue; // r
-      pixels[i+1] = colorvalue; // g
-      pixels[i+2] = 1; // b
-      pixels[i+3] = 255; // a
+      pixelgrid.pixels[i] = colorvalue; // r
+      pixelgrid.pixels[i+1] = colorvalue; // g
+      pixelgrid.pixels[i+2] = 1; // b
+      pixelgrid.pixels[i+3] = 255; // a
     }
 
     // access by index
     int row = 100;
     int col = 100;
-    pixels[4*W*row + 4*col + 0] = 0;
-    pixels[4*W*row + 4*col + 1] = 0;
-    pixels[4*W*row + 4*col + 2] = 0;
-    pixels[4*W*row + 4*col + 3] = 0;
+    pixelgrid.pixels[4*W*row + 4*col + 0] = 0;
+    pixelgrid.pixels[4*W*row + 4*col + 1] = 0;
+    pixelgrid.pixels[4*W*row + 4*col + 2] = 0;
+    pixelgrid.pixels[4*W*row + 4*col + 3] = 0;
 
-    texture.update(pixels);
+    texture.update(pixelgrid.pixels);
 
     window.clear();
     window.draw(sprite);
     window.display();
   }
-
-  delete pixels;
 
 
   return 0;
