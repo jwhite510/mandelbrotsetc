@@ -3,6 +3,15 @@
 
 using namespace std;
 
+void Linspace(float* arr, float begin, float end, int N)
+{
+  float dx = (end - begin) / N;
+  float value = begin;
+  for(int i=0; i < N; i++) {
+    arr[i] = value;
+    value+=dx;
+  }
+}
 struct PixelGrid
 {
   sf::Uint8* pixels;
@@ -44,11 +53,16 @@ struct Application
   int center_row_delta;
   int mouse_down_col;
   int mouse_down_row;
+  float* x;
+  float* y;
 
   Application()
   {
     W = 200;
     H = 200; // you can change this to full window size later
+
+    x = new float[W];
+    y = new float[H];
 
     center_row = H/2;
     center_col = W/2;
@@ -66,7 +80,7 @@ struct Application
   }
   void run()
   {
-    int colorvalue = 255;
+    int colorvalue = 0;
     while (window->isOpen())
     {
       sf::Event event;
@@ -92,15 +106,11 @@ struct Application
         colorvalue = 0;
       colorvalue++;
 
-      for(register int i = 0; i < W*H*4; i += 4) {
-        pixelgrid->pixels[i] = colorvalue; // r
-        pixelgrid->pixels[i+1] = colorvalue; // g
-        pixelgrid->pixels[i+2] = 1; // b
-        pixelgrid->pixels[i+3] = 255; // a
-      }
 
       int new_center_row = center_row;
       int new_center_col = center_col;
+      float delta_linspace_x;
+      float delta_linspace_y;
       if(mouseDragging) {
         sf::Vector2i position = sf::Mouse::getPosition();
         // cout << "x" << position.x << endl;
@@ -114,18 +124,47 @@ struct Application
         std::cout << "new_center_row" << " => " << new_center_row << std::endl;
         std::cout << "new_center_col" << " => " << new_center_col << std::endl;
 
+        std::cout << "delta_row" << " => " << delta_row << std::endl; // pixels
+        std::cout << "delta_col" << " => " << delta_col << std::endl; // pixels
+
+        delta_linspace_x = (float)delta_row / (float)W;
+        delta_linspace_y = (float)delta_col / (float)H;
+
+        std::cout << "delta_linspace_x" << " => " << delta_linspace_x << std::endl;
+        std::cout << "delta_linspace_y" << " => " << delta_linspace_y << std::endl;
+
         // std::cout << "center_row_delta" << " => " << center_row_delta << std::endl;
         // std::cout << "center_col_delta" << " => " << center_col_delta << std::endl;
       }
 
-      // access by index
-      int row = new_center_row;
-      for(int col=new_center_col; col < new_center_col+20; col++) {
-        (*pixelgrid)(row,col,0) = 255;
-        (*pixelgrid)(row,col,1) = 0;
-        (*pixelgrid)(row,col,2) = 0;
-        (*pixelgrid)(row,col,3) = 255;
-      }
+      // make linspace from new_center_row, new_center_row
+      Linspace(x, -1-delta_linspace_x, 1-delta_linspace_x, W);
+      Linspace(y, -1-delta_linspace_y, 1-delta_linspace_y, H);
+      // for(int i=0; i < 5; i++)
+        // cout << x[i] << " ";
+      // cout << "...";
+      // for(int i=W-5; i < W; i++)
+        // cout << x[i] << " ";
+      // cout << endl;
+
+      for(int i=0; i < W; i++)
+        for(int j=0; j < H; j++) {
+          int valueX = ((x[i] + 1) / 2)*255;
+          int valueY = ((y[j] + 1) / 2)*255;
+          (*pixelgrid)(i,j,0) = valueX;
+          (*pixelgrid)(i,j,1) = valueY;
+          (*pixelgrid)(i,j,2) = 0;
+          (*pixelgrid)(i,j,3) = 255;
+        }
+
+      // // access by index
+      // int row = new_center_row;
+      // for(int col=new_center_col; col < new_center_col+20; col++) {
+        // (*pixelgrid)(row,col,0) = 255;
+        // (*pixelgrid)(row,col,1) = 0;
+        // (*pixelgrid)(row,col,2) = 0;
+        // (*pixelgrid)(row,col,3) = 255;
+      // }
 
 
       // draw on screen
@@ -139,6 +178,8 @@ struct Application
   }
   ~Application()
   {
+    delete x;
+    delete y;
     delete window;
     delete pixelgrid;
     delete texture;
