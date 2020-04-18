@@ -42,12 +42,23 @@ int main()
       pixels[i+2] = 1; // b
       pixels[i+3] = 255; // a
     }
+
+    // access by index
+    int row = 100;
+    int col = 100;
+    pixels[4*W*row + 4*col + 0] = 0;
+    pixels[4*W*row + 4*col + 1] = 0;
+    pixels[4*W*row + 4*col + 2] = 0;
+    pixels[4*W*row + 4*col + 3] = 0;
+
     texture.update(pixels);
 
     window.clear();
     window.draw(sprite);
     window.display();
   }
+
+  delete pixels;
 
 
   return 0;
