@@ -58,6 +58,15 @@ int main()
     {
       if (event.type == sf::Event::Closed)
         window.close();
+      if(event.type == sf::Event::MouseButtonPressed) {
+        cout << "mouse pressed" << endl;
+        sf::Vector2i position = sf::Mouse::getPosition();
+        cout << "x" << position.x << endl;
+        cout << "y" << position.y << endl;
+      }
+      if(event.type == sf::Event::MouseButtonReleased) {
+        cout << "mouse released" << endl;
+      }
     }
     // update pixels
     if(colorvalue >= 255)
