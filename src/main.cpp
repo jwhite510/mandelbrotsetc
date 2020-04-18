@@ -20,14 +20,8 @@ int main()
   texture.create(W, H); 
   sf::Sprite sprite(texture); // needed to draw the texture on screen
   // ...
-  for(register int i = 0; i < W*H*4; i += 4) {
-    pixels[i] = 255; // r
-    pixels[i+1] = 255; // g
-    pixels[i+2] = 1; // b
-    pixels[i+3] = 255; // a
-  }
-  texture.update(pixels);
 
+  int colorvalue = 255;
 
   while (window.isOpen())
   {
@@ -37,6 +31,18 @@ int main()
       if (event.type == sf::Event::Closed)
         window.close();
     }
+    // update pixels
+    if(colorvalue >= 255)
+      colorvalue = 0;
+    colorvalue++;
+
+    for(register int i = 0; i < W*H*4; i += 4) {
+      pixels[i] = colorvalue; // r
+      pixels[i+1] = colorvalue; // g
+      pixels[i+2] = 1; // b
+      pixels[i+3] = 255; // a
+    }
+    texture.update(pixels);
 
     window.clear();
     window.draw(sprite);
