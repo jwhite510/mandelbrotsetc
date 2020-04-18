@@ -35,6 +35,9 @@ struct Application
   PixelGrid* pixelgrid;
   unsigned int W;
   unsigned int H;
+  sf::Texture* texture;
+  sf::Sprite* sprite;
+
   Application()
   {
     W = 200;
@@ -46,15 +49,13 @@ struct Application
     // sf::Uint8* pixels = new sf::Uint8[W*H*4];
     pixelgrid = new PixelGrid(W,H);
 
-
-
+    texture = new sf::Texture;
+    texture->create(W, H);
+    sprite = new sf::Sprite(*texture);
 
   }
   void run()
   {
-    sf::Texture texture;
-    texture.create(W, H);
-    sf::Sprite sprite(texture); // needed to draw the texture on screen
     int colorvalue = 255;
     while (window->isOpen())
     {
@@ -99,10 +100,10 @@ struct Application
       // pixelgrid.pixels[4*W*row + 4*col + 2] = 0;
       // pixelgrid.pixels[4*W*row + 4*col + 3] = 0;
 
-      texture.update((*pixelgrid).pixels);
+      texture->update((*pixelgrid).pixels);
 
       window->clear();
-      window->draw(sprite);
+      window->draw(*sprite);
       window->display();
     }
   }
@@ -110,6 +111,8 @@ struct Application
   {
     delete window;
     delete pixelgrid;
+    delete texture;
+    delete sprite;
   }
 };
 
