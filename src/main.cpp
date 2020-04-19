@@ -184,7 +184,7 @@ int main()
 {
 
   // computational grid parameter
-  const int W = 600;
+  const int W = 16;
 
   // MPI parameters
   int process_Rank, size_Of_Cluster;
@@ -194,7 +194,7 @@ int main()
   const int number_of_workers = size_Of_Cluster -1;
 
   if(W % number_of_workers != 0) {
-    cout << "choose a process number that is divisible by " << process_Rank << endl;
+    cout << "choose a process number that is divisible by " << number_of_workers << endl;
     MPI_Finalize();
     return 1;
   }
@@ -205,16 +205,27 @@ int main()
   double* worker_iterations;
   double* worker_real;
   double* worker_imag;
-  int gridpoints_per_worker = W / number_of_workers;
+  int gridpoints_per_worker = W*W / number_of_workers;
 
   // master application
   Application* mapp;
+  double* worker_x_buffer;
+  double* worker_y_buffer;
+  double* worker_iterations_buffer;
+  double* worker_real_buffer;
+  double* worker_imag_buffer;
 
   std::cout << "process_Rank" << " => " << process_Rank << std::endl;
   if(process_Rank == 0)
   {
     // initialize class
-    mapp = new Application(600);
+    mapp = new Application(W);
+
+    worker_x_buffer = new double[gridpoints_per_worker];
+    worker_y_buffer = new double[gridpoints_per_worker];
+    worker_iterations_buffer = new double[gridpoints_per_worker];
+    worker_real_buffer = new double[gridpoints_per_worker];
+    worker_imag_buffer = new double[gridpoints_per_worker];
   }
 
   // divide the memory into according number of threads
@@ -232,6 +243,23 @@ int main()
   if(process_Rank == 0)
   {
     // send coordinate space to workers
+    mapp->CaptureEvents();
+    mapp->DrawCoordinateSpace();
+    int buffer_index = 0;
+    int current_worker = 1;
+    for(int i=0; i < mapp->W; i++)
+      for(int j=0; j < mapp->H; j++) {
+        // send data to worker
+        worker_x_buffer[buffer_index] = mapp->x[i];
+        worker_y_buffer[buffer_index] = mapp->y[j];
+        buffer_index++;
+        if(buffer_index == gridpoints_per_worker) {
+          // buffer is full, send it to worker
+          buffer_index = 0;
+          std::cout << "resetting buffer index to 0, send to worker " << current_worker << endl;
+          current_worker++;
+        }
+      }
   }
 
 
@@ -246,6 +274,13 @@ int main()
   if(process_Rank == 0)
   {
     delete mapp;
+
+    delete [] worker_x_buffer;
+    delete [] worker_y_buffer;
+    delete [] worker_iterations_buffer;
+    delete [] worker_real_buffer;
+    delete [] worker_imag_buffer;
+
   }
 
   MPI_Finalize();
