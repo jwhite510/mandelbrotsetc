@@ -10,7 +10,9 @@ SFML
 https://www.sfml-dev.org/index.php
 
 # Installation
+```
 mkdir build
 cd build
 cmake ..
 make
+```
