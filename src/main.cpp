@@ -71,20 +71,25 @@ struct Application
   sf::Texture* texture;
   sf::Sprite* sprite;
   int mouseDragging = 0;
-  int center_x;
+  float center_x;
   int center_col_delta;
-  int center_y;
+  float center_y;
   int center_row_delta;
   int mouse_down_col;
   int mouse_down_row;
   int x_span;
   float* x;
   float* y;
+  float delta_linspace_x;
+  float delta_linspace_y;
 
   Application()
   {
     W = 300;
     H = 300; // you can change this to full window size later
+
+    delta_linspace_x = 0;
+    delta_linspace_y = 0;
 
     x = new float[W];
     y = new float[H];
@@ -122,8 +127,12 @@ struct Application
           mouse_down_row = position.y;
         }
         if(event.type == sf::Event::MouseButtonReleased) {
-          cout << "mouse released" << endl;
           mouseDragging = 0;
+          cout << "mouse released" << endl;
+          center_x += delta_linspace_x;
+          center_y += delta_linspace_y;
+          delta_linspace_x = 0;
+          delta_linspace_y = 0;
         }
       }
       // update pixels
@@ -132,8 +141,6 @@ struct Application
       colorvalue++;
 
 
-      float delta_linspace_x = 0;
-      float delta_linspace_y = 0;
       if(mouseDragging) {
         sf::Vector2i position = sf::Mouse::getPosition();
         // cout << "x" << position.x << endl;
@@ -147,6 +154,11 @@ struct Application
       }
 
       // make linspace from new_center_row, new_center_row
+      std::cout << "delta_linspace_x" << " => " << delta_linspace_x << std::endl;
+      std::cout << "center_x" << " => " << center_x << std::endl;
+      std::cout << "delta_linspace_y" << " => " << delta_linspace_y << std::endl;
+      std::cout << "center_y" << " => " << center_y << std::endl;
+
       Linspace(x, -(x_span/2)-delta_linspace_x-center_x, (x_span/2)-delta_linspace_x-center_x, W);
       Linspace(y, -(x_span/2)-delta_linspace_y-center_y, (x_span/2)-delta_linspace_y-center_y, H);
 
