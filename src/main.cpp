@@ -71,12 +71,13 @@ struct Application
   sf::Texture* texture;
   sf::Sprite* sprite;
   int mouseDragging = 0;
-  int center_col;
+  int center_x;
   int center_col_delta;
-  int center_row;
+  int center_y;
   int center_row_delta;
   int mouse_down_col;
   int mouse_down_row;
+  int x_span;
   float* x;
   float* y;
 
@@ -87,9 +88,9 @@ struct Application
 
     x = new float[W];
     y = new float[H];
-
-    center_row = H/2;
-    center_col = W/2;
+    x_span = 3;
+    center_x = 0;
+    center_y = 0;
 
     // sf::RenderWindow window(sf::VideoMode(W, H), "SFML works!");
     window = new sf::RenderWindow(sf::VideoMode(W, H), "SFML works!");
@@ -131,8 +132,6 @@ struct Application
       colorvalue++;
 
 
-      int new_center_row = center_row;
-      int new_center_col = center_col;
       float delta_linspace_x = 0;
       float delta_linspace_y = 0;
       if(mouseDragging) {
@@ -142,28 +141,14 @@ struct Application
         int delta_col = position.x - mouse_down_col;
         int delta_row = position.y - mouse_down_row;
 
-        new_center_row = center_row + delta_row;
-        new_center_col = center_col + delta_col;
+        delta_linspace_x = x_span * ((float)delta_row / (float)W);
+        delta_linspace_y = x_span * ((float)delta_col / (float)H);
 
-        std::cout << "new_center_row" << " => " << new_center_row << std::endl;
-        std::cout << "new_center_col" << " => " << new_center_col << std::endl;
-
-        std::cout << "delta_row" << " => " << delta_row << std::endl; // pixels
-        std::cout << "delta_col" << " => " << delta_col << std::endl; // pixels
-
-        delta_linspace_x = (float)delta_row / (float)W;
-        delta_linspace_y = (float)delta_col / (float)H;
-
-        std::cout << "delta_linspace_x" << " => " << delta_linspace_x << std::endl;
-        std::cout << "delta_linspace_y" << " => " << delta_linspace_y << std::endl;
-
-        // std::cout << "center_row_delta" << " => " << center_row_delta << std::endl;
-        // std::cout << "center_col_delta" << " => " << center_col_delta << std::endl;
       }
 
       // make linspace from new_center_row, new_center_row
-      Linspace(x, -2-delta_linspace_x, 2-delta_linspace_x, W);
-      Linspace(y, -2-delta_linspace_y, 2-delta_linspace_y, H);
+      Linspace(x, -(x_span/2)-delta_linspace_x-center_x, (x_span/2)-delta_linspace_x-center_x, W);
+      Linspace(y, -(x_span/2)-delta_linspace_y-center_y, (x_span/2)-delta_linspace_y-center_y, H);
 
       for(int i=0; i < W; i++)
         for(int j=0; j < H; j++) {
