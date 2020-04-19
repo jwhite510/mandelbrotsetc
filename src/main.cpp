@@ -88,6 +88,8 @@ struct Application
   double* y;
   double delta_linspace_x;
   double delta_linspace_y;
+  sf::Text* text;
+  sf::Font* font;
 
   Application(int W_in)
   {
@@ -113,6 +115,15 @@ struct Application
     texture->create(W, H);
     sprite = new sf::Sprite(*texture);
 
+    // create text to render fps
+    text = new sf::Text;
+    font = new sf::Font;
+    font->loadFromFile("ipaexg.ttf");
+
+    text->setFont(*font);
+    text->setCharacterSize(24);
+    text->setFillColor(sf::Color::Red);
+    text->setPosition(10,10);
   }
   void CaptureEvents()
   {
@@ -160,12 +171,17 @@ struct Application
     Linspace(x, -(x_span/2)-delta_linspace_x-center_x, (x_span/2)-delta_linspace_x-center_x, W);
     Linspace(y, -(x_span/2)-delta_linspace_y-center_y, (x_span/2)-delta_linspace_y-center_y, H);
   }
-  void DrawPixels()
+  void DrawPixels(const int &i)
   {
-      texture->update((*pixelgrid).pixels);
-      window->clear();
-      window->draw(*sprite);
-      window->display();
+
+    text->setString("FPS" + to_string(i));
+    texture->update((*pixelgrid).pixels);
+    window->clear();
+
+    window->draw(*sprite);
+    window->draw(*text);
+
+    window->display();
   }
   ~Application()
   {
@@ -176,6 +192,8 @@ struct Application
     delete pixelgrid;
     delete texture;
     delete sprite;
+    delete text;
+    delete font;
   }
 };
 
@@ -320,7 +338,8 @@ int main()
           // cout << "setting value:" << worker_real_buffer[buffer_index] << endl;
           buffer_index++;
         }
-      mapp->DrawPixels();
+      // draw fps
+      mapp->DrawPixels(i);
     }
     if(process_Rank != 0)
     {
@@ -466,7 +485,7 @@ int main()
         (*app.pixelgrid)(i,j,3) = 255;
       }
     // draw on screen
-    app.DrawPixels();
+    app.DrawPixels(1);
 
   }
 
