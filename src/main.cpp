@@ -101,7 +101,7 @@ struct Application
     center_y = 0;
 
     // sf::RenderWindow window(sf::VideoMode(W, H), "SFML works!");
-    window = new sf::RenderWindow(sf::VideoMode(W, H), "SFML works!");
+    window = new sf::RenderWindow(sf::VideoMode(W, H), "Mandelbrot Set");
 
     // sf::Uint8* pixels = new sf::Uint8[W*H*4];
     pixelgrid = new PixelGrid(W,H);
@@ -139,7 +139,7 @@ struct Application
         }
         if(event.type == sf::Event::MouseWheelScrolled) {
           cout << "mouse scrolling" << endl;
-          cout << event.mouseWheelScroll.delta << endl;
+          // cout << event.mouseWheelScroll.delta << endl;
           float deltazoom = ((float)event.mouseWheelScroll.delta / 10);
           std::cout << "deltazoom" << " => " << deltazoom << std::endl;
           x_span += deltazoom;
@@ -163,7 +163,7 @@ struct Application
         delta_linspace_y = x_span * ((float)delta_col / (float)H);
 
       }
-      std::cout << "x_span" << " => " << x_span << std::endl;
+      // std::cout << "x_span" << " => " << x_span << std::endl;
       Linspace(x, -(x_span/2)-delta_linspace_x-center_x, (x_span/2)-delta_linspace_x-center_x, W);
       Linspace(y, -(x_span/2)-delta_linspace_y-center_y, (x_span/2)-delta_linspace_y-center_y, H);
 
