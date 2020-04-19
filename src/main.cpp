@@ -113,38 +113,6 @@ struct Application
     sprite = new sf::Sprite(*texture);
 
   }
-  void run()
-  {
-    int colorvalue = 0;
-    while (window->isOpen())
-    {
-      CaptureEvents();
-      // std::cout << "x_span" << " => " << x_span << std::endl;
-      DrawCoordinateSpace();
-
-      // double max_mandelrot = 0;
-      for(int i=0; i < W; i++)
-        for(int j=0; j < H; j++) {
-          // calculate divergence for mandelbrot set
-          int iterations;
-          double real;
-          double imag;
-          mandelbrot(x[i], y[j],
-              iterations, // OUT
-              real, // OUT
-              imag); // OUT
-
-
-          (*pixelgrid)(i,j,0) = real;
-          (*pixelgrid)(i,j,1) = imag;
-          (*pixelgrid)(i,j,2) = iterations;
-          (*pixelgrid)(i,j,3) = 255;
-        }
-      // draw on screen
-      DrawPixels();
-
-    }
-  }
   void CaptureEvents()
   {
     sf::Event event;
@@ -214,6 +182,39 @@ struct Application
 int main()
 {
   Application app;
-  app.run();
+  while(app.window->isOpen())
+  {
+    // capture mouse events
+    app.CaptureEvents();
+
+    // update x and y arrays
+    app.DrawCoordinateSpace();
+
+    for(int i=0; i < app.W; i++)
+      for(int j=0; j < app.H; j++) {
+
+        // calculate divergence for mandelbrot set
+        int iterations;
+        double real;
+        double imag;
+        mandelbrot(app.x[i], app.y[j],
+            iterations, // OUT
+            real, // OUT
+            imag); // OUT
+
+        (*app.pixelgrid)(i,j,0) = real;
+        (*app.pixelgrid)(i,j,1) = imag;
+        (*app.pixelgrid)(i,j,2) = iterations;
+        (*app.pixelgrid)(i,j,3) = 255;
+      }
+    // draw on screen
+    app.DrawPixels();
+
+  }
+
+
+
+
+
   return 0;
 }
