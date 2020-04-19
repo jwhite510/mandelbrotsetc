@@ -4,7 +4,7 @@
 
 using namespace std;
 
-int mandelbrot(float real, float imaginary)
+float mandelbrot(float real, float imaginary)
 {
   // cout << "calculate mandelbrot" << endl;
   // std::cout << "real" << " => " << real << std::endl;
@@ -23,9 +23,12 @@ int mandelbrot(float real, float imaginary)
   }
   average_delta /= n_iterations;
   // std::cout << "average_delta" << " => " << average_delta << std::endl;
-  if(abs(average_delta) > 10 || isnan(average_delta))
-    return 0;
-  return 1;
+
+  return abs(average_delta);
+
+  // if(abs(average_delta) > 10 || isnan(average_delta))
+    // return 0;
+  // return 1;
 }
 void Linspace(float* arr, float begin, float end, int N)
 {
@@ -85,8 +88,8 @@ struct Application
 
   Application()
   {
-    W = 300;
-    H = 300; // you can change this to full window size later
+    W = 900;
+    H = 900; // you can change this to full window size later
 
     delta_linspace_x = 0;
     delta_linspace_y = 0;
@@ -164,16 +167,21 @@ struct Application
       Linspace(x, -(x_span/2)-delta_linspace_x-center_x, (x_span/2)-delta_linspace_x-center_x, W);
       Linspace(y, -(x_span/2)-delta_linspace_y-center_y, (x_span/2)-delta_linspace_y-center_y, H);
 
+      // float max_mandelrot = 0;
       for(int i=0; i < W; i++)
         for(int j=0; j < H; j++) {
           // calculate divergence for mandelbrot set
-          int m = mandelbrot(x[i], y[j]);
+          float m = mandelbrot(x[i], y[j]);
+          // if(m > max_mandelrot && !isnan(m) && !isinf(m)) {
+            // max_mandelrot = m; // this is useless
+          // }
 
           (*pixelgrid)(i,j,0) = 255* m;
-          (*pixelgrid)(i,j,1) = 0;
+          (*pixelgrid)(i,j,1) = 100*m;
           (*pixelgrid)(i,j,2) = 0;
           (*pixelgrid)(i,j,3) = 255;
         }
+      // std::cout << "max_mandelrot" << " => " << max_mandelrot << std::endl;
 
       // draw on screen
 
