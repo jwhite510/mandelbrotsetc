@@ -263,7 +263,7 @@ int main()
     worker_imag = new double[gridpoints_per_worker];
   }
 
-  for(int i=0; i < 1000; i++)
+  for(int i=0; i < 100; i++)
   {
     // begin calculation
     if(process_Rank == 0)
@@ -351,7 +351,7 @@ int main()
       last_drawtime = this_drawtime;
 
       avg_drawtime_counter += time.count();
-      if(i % 10 == 0) {
+      if(i % 10 == 0 && i!=0) {
         avg_drawtime = (avg_drawtime_counter/10);
         avg_drawtime_counter = 0;
       }
