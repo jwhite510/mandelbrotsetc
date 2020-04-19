@@ -181,6 +181,40 @@ struct Application
 
 int main()
 {
+
+  // initialize MPI
+  if(process_Rank == 0)
+  {
+    // initialize class
+  }
+
+  // sync
+
+  // divide the memory into according number of threads
+  if(process_Rank != 0)
+  {
+    // malloc needed memory for each thread
+  }
+
+  for(...) {
+    // sync
+    if(process_Rank == 0)
+    {
+      // transfer coordinates to workers
+
+      // receive data from workers
+
+      // update application
+    }
+    if(process_Rank != 0)
+    {
+      // receive the coordinates
+      // calculate values for each point
+      // send to process 0
+    }
+  }
+
+
   Application app;
   while(app.window->isOpen())
   {
