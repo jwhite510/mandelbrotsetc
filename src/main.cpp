@@ -184,7 +184,7 @@ int main()
 {
 
   // computational grid parameter
-  const int W = 16;
+  const int W = 256;
 
   // MPI parameters
   int process_Rank, size_Of_Cluster;
@@ -239,108 +239,113 @@ int main()
     worker_imag = new double[gridpoints_per_worker];
   }
 
-  // begin calculation
-  if(process_Rank == 0)
+  for(int i=0; i < 1000; i++)
   {
-    // send coordinate space to workers
-    mapp->CaptureEvents();
-    mapp->DrawCoordinateSpace();
-    int buffer_index = 0;
-    int current_worker = 1;
-    for(int i=0; i < mapp->W; i++)
-      for(int j=0; j < mapp->H; j++) {
-        // send data to worker
-        worker_x_buffer[buffer_index] = mapp->x[i];
-        // worker_x_buffer[buffer_index] = current_worker;
-        worker_y_buffer[buffer_index] = mapp->y[j];
-        buffer_index++;
-        if(buffer_index == gridpoints_per_worker) {
-          // buffer is full, send it to worker
-          std::cout << "resetting buffer index to 0, send to worker " << current_worker << endl;
-          MPI_Send(worker_x_buffer, // initial address
-              gridpoints_per_worker, // number of elements to send
-              MPI_DOUBLE, // type of data
-              current_worker, // rank of reveiver
-              1, // message tag
-              MPI_COMM_WORLD
-              );
-          MPI_Send(worker_y_buffer, // initial address
-              gridpoints_per_worker, // number of elements to send
-              MPI_DOUBLE, // type of data
-              current_worker, // rank of reveiver
-              1, // message tag
-              MPI_COMM_WORLD
-              );
+    // begin calculation
+    if(process_Rank == 0)
+    {
+      // send coordinate space to workers
+      mapp->CaptureEvents();
+      mapp->DrawCoordinateSpace();
+      int buffer_index = 0;
+      int current_worker = 1;
+      for(int i=0; i < mapp->W; i++)
+        for(int j=0; j < mapp->H; j++) {
+          // send data to worker
+          worker_x_buffer[buffer_index] = mapp->x[i];
+          // worker_x_buffer[buffer_index] = current_worker;
+          worker_y_buffer[buffer_index] = mapp->y[j];
+          buffer_index++;
+          if(buffer_index == gridpoints_per_worker) {
+            // buffer is full, send it to worker
+            // std::cout << "resetting buffer index to 0, send to worker " << current_worker << endl;
+            MPI_Send(worker_x_buffer, // initial address
+                gridpoints_per_worker, // number of elements to send
+                MPI_DOUBLE, // type of data
+                current_worker, // rank of reveiver
+                1, // message tag
+                MPI_COMM_WORLD
+                );
+            MPI_Send(worker_y_buffer, // initial address
+                gridpoints_per_worker, // number of elements to send
+                MPI_DOUBLE, // type of data
+                current_worker, // rank of reveiver
+                1, // message tag
+                MPI_COMM_WORLD
+                );
 
-          buffer_index = 0;
-          current_worker++;
+            buffer_index = 0;
+            current_worker++;
 
+          }
         }
-      }
-    // receive data
-    buffer_index = gridpoints_per_worker;
-    current_worker = 1;
-    for(int i=0; i < mapp->W; i++)
-      for(int j=0; j < mapp->H; j++) {
-        if(buffer_index == gridpoints_per_worker) {
-          // receive data
-          MPI_Recv(worker_real_buffer,
-              gridpoints_per_worker, // number of elements received
-              MPI_DOUBLE, // type of data being received
-              current_worker, // rank of sender
-              1, // message tag
-              MPI_COMM_WORLD,
-              MPI_STATUS_IGNORE
-              );
-          buffer_index = 0;
-          current_worker ++;
+      // receive data
+      buffer_index = gridpoints_per_worker;
+      current_worker = 1;
+      for(int i=0; i < mapp->W; i++)
+        for(int j=0; j < mapp->H; j++) {
+          if(buffer_index == gridpoints_per_worker) {
+            // receive data
+            MPI_Recv(worker_real_buffer,
+                gridpoints_per_worker, // number of elements received
+                MPI_DOUBLE, // type of data being received
+                current_worker, // rank of sender
+                1, // message tag
+                MPI_COMM_WORLD,
+                MPI_STATUS_IGNORE
+                );
+            buffer_index = 0;
+            current_worker ++;
+          }
+          (*mapp->pixelgrid)(i,j,0) = worker_real_buffer[buffer_index]*20;
+          (*mapp->pixelgrid)(i,j,1) = 0;
+          (*mapp->pixelgrid)(i,j,2) = 0;
+          (*mapp->pixelgrid)(i,j,3) = 255;
+          // cout << "setting value:" << worker_real_buffer[buffer_index] << endl;
+          buffer_index++;
         }
-        (*mapp->pixelgrid)(i,j,0) = worker_real_buffer[buffer_index];
-        cout << "setting value:" << worker_real_buffer[buffer_index] << endl;
-        buffer_index++;
-      }
-  }
-  if(process_Rank != 0)
-  {
-    // worker receive data from buffer
-    MPI_Recv(worker_x,
-        gridpoints_per_worker, // number of elements received
-        MPI_DOUBLE, // type of data being received
-        0, // rank of sender
-        1, // message tag
-        MPI_COMM_WORLD,
-        MPI_STATUS_IGNORE
-        );
-    MPI_Recv(worker_y,
-        gridpoints_per_worker, // number of elements received
-        MPI_DOUBLE, // type of data being received
-        0, // rank of sender
-        1, // message tag
-        MPI_COMM_WORLD,
-        MPI_STATUS_IGNORE
-        );
-    cout << "worker" << process_Rank << "received data from master" << endl;
-    for(int i=0; i < 10; i++)
-      cout << worker_x[i] << "  ";
-    cout << "...";
-    for(int i=gridpoints_per_worker-10; i < gridpoints_per_worker; i++)
-      cout << worker_x[i] << "  ";
+      mapp->DrawPixels();
+    }
+    if(process_Rank != 0)
+    {
+      // worker receive data from buffer
+      MPI_Recv(worker_x,
+          gridpoints_per_worker, // number of elements received
+          MPI_DOUBLE, // type of data being received
+          0, // rank of sender
+          1, // message tag
+          MPI_COMM_WORLD,
+          MPI_STATUS_IGNORE
+          );
+      MPI_Recv(worker_y,
+          gridpoints_per_worker, // number of elements received
+          MPI_DOUBLE, // type of data being received
+          0, // rank of sender
+          1, // message tag
+          MPI_COMM_WORLD,
+          MPI_STATUS_IGNORE
+          );
+      // cout << "worker" << process_Rank << "received data from master" << endl;
+      // for(int i=0; i < 10; i++)
+      //   cout << worker_x[i] << "  ";
+      // cout << "...";
+      // for(int i=gridpoints_per_worker-10; i < gridpoints_per_worker; i++)
+      //   cout << worker_x[i] << "  ";
 
-    cout << endl;
+      // cout << endl;
 
-    // send data to master
-    for(int i=0; i < gridpoints_per_worker; i++)
-      worker_real[i] = process_Rank;
+      // send data to master
+      for(int i=0; i < gridpoints_per_worker; i++)
+        worker_real[i] = process_Rank;
 
-    MPI_Send(worker_real, // initial address
-        gridpoints_per_worker, // number of elements to send
-        MPI_DOUBLE, // type of data
-        0, // rank of reveiver
-        1, // message tag
-        MPI_COMM_WORLD
-        );
-
-
+      MPI_Send(worker_real, // initial address
+          gridpoints_per_worker, // number of elements to send
+          MPI_DOUBLE, // type of data
+          0, // rank of reveiver
+          1, // message tag
+          MPI_COMM_WORLD
+          );
+    }
   }
 
 
