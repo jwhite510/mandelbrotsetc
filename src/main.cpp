@@ -142,7 +142,7 @@ struct Application
         if(event.type == sf::Event::MouseWheelScrolled) {
           cout << "mouse scrolling" << endl;
           cout << event.mouseWheelScroll.delta << endl;
-          double deltazoom = ((double)event.mouseWheelScroll.delta / 100);
+          double deltazoom = ((double)event.mouseWheelScroll.delta / 10);
           double zoomlevel = 1 + deltazoom;
           std::cout << "deltazoom" << " => " << deltazoom << std::endl;
           x_span *= zoomlevel;
