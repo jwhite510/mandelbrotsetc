@@ -2,5 +2,5 @@
 set -e
 cd build
 make
-./a.out
+# ./a.out
 
