@@ -2,8 +2,10 @@
 #include <iostream>
 #include <complex>
 #include <mpi.h>
+#include <chrono>
 
 using namespace std;
+using namespace std::chrono;
 
 void mandelbrot(double c_real, double c_imaginary, int &iterations, double &real, double &imag)
 {
@@ -174,7 +176,7 @@ struct Application
   void DrawPixels(const int &i)
   {
 
-    text->setString("FPS" + to_string(i));
+    text->setString("draw time (ms): " + to_string(i));
     texture->update((*pixelgrid).pixels);
     window->clear();
 
@@ -201,6 +203,10 @@ struct Application
 int main()
 {
 
+  // initialize time for showing draw time
+  auto last_drawtime = high_resolution_clock::now();
+  int avg_drawtime = 0;
+  int avg_drawtime_counter = 0;
   // computational grid parameter
   const int W = 512;
 
@@ -339,7 +345,17 @@ int main()
           buffer_index++;
         }
       // draw fps
-      mapp->DrawPixels(i);
+      // record time
+      auto this_drawtime = high_resolution_clock::now();
+      auto time = duration_cast<milliseconds>(this_drawtime-last_drawtime);
+      last_drawtime = this_drawtime;
+
+      avg_drawtime_counter += time.count();
+      if(i % 10 == 0) {
+        avg_drawtime = (avg_drawtime_counter/10);
+        avg_drawtime_counter = 0;
+      }
+      mapp->DrawPixels(avg_drawtime);
     }
     if(process_Rank != 0)
     {
