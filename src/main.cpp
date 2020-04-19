@@ -193,31 +193,62 @@ int main()
   MPI_Comm_rank(MPI_COMM_WORLD, &process_Rank);
   const int number_of_workers = size_Of_Cluster -1;
 
-  if(W % size_Of_Cluster != 0) {
+  if(W % number_of_workers != 0) {
     cout << "choose a process number that is divisible by " << process_Rank << endl;
     MPI_Finalize();
     return 1;
   }
 
+  // worker memory space
+  double* worker_x;
+  double* worker_y;
+  double* worker_iterations;
+  double* worker_real;
+  double* worker_imag;
+  int gridpoints_per_worker = W / number_of_workers;
+
+  // master application
+  Application* mapp;
+
   std::cout << "process_Rank" << " => " << process_Rank << std::endl;
-
-  MPI_Finalize();
-  return 0;
-
-  // initialize MPI
   if(process_Rank == 0)
   {
     // initialize class
+    mapp = new Application(600);
   }
-
-  // sync
 
   // divide the memory into according number of threads
   if(process_Rank != 0)
   {
     // malloc needed memory for each thread
+    worker_x = new double[gridpoints_per_worker];
+    worker_y = new double[gridpoints_per_worker];
+    worker_iterations = new double[gridpoints_per_worker];
+    worker_real = new double[gridpoints_per_worker];
+    worker_imag = new double[gridpoints_per_worker];
   }
 
+  // begin calculation
+  if(process_Rank == 0)
+  {
+    // send coordinate space to workers
+  }
+
+
+  // clean up memory
+  if(process_Rank != 0) {
+    delete [] worker_x;
+    delete [] worker_y;
+    delete [] worker_iterations;
+    delete [] worker_real;
+    delete [] worker_imag;
+  }
+  if(process_Rank == 0)
+  {
+    delete mapp;
+  }
+
+  MPI_Finalize();
   return 0;
 
   // for(...) {
