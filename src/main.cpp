@@ -313,9 +313,9 @@ int main()
             buffer_index = 0;
             current_worker ++;
           }
-          (*mapp->pixelgrid)(i,j,0) = worker_real_buffer[buffer_index]*20;
-          (*mapp->pixelgrid)(i,j,1) = worker_imag_buffer[buffer_index]*20;
-          (*mapp->pixelgrid)(i,j,2) = worker_iterations_buffer[buffer_index]*20;
+          (*mapp->pixelgrid)(i,j,0) = worker_real_buffer[buffer_index];
+          (*mapp->pixelgrid)(i,j,1) = worker_imag_buffer[buffer_index];
+          (*mapp->pixelgrid)(i,j,2) = worker_iterations_buffer[buffer_index];
           (*mapp->pixelgrid)(i,j,3) = 255;
           // cout << "setting value:" << worker_real_buffer[buffer_index] << endl;
           buffer_index++;
@@ -349,14 +349,28 @@ int main()
       //   cout << worker_x[i] << "  ";
 
       // cout << endl;
+      for(int i=0; i < gridpoints_per_worker; i++) {
 
-      // send data to master
-      for(int i=0; i < gridpoints_per_worker; i++)
-        worker_real[i] = 0;
-      for(int i=0; i < gridpoints_per_worker; i++)
-        worker_imag[i] = 0;
-      for(int i=0; i < gridpoints_per_worker; i++)
-        worker_iterations[i] = process_Rank;
+        int iterations;
+        double real;
+        double imag;
+
+        mandelbrot(worker_x[i], worker_y[i],
+            iterations, // OUT
+            real, // OUT
+            imag); // OUT
+        worker_real[i] = real;
+        worker_imag[i] = imag;
+        worker_iterations[i] = iterations;
+      }
+
+      // // send data to master
+      // for(int i=0; i < gridpoints_per_worker; i++)
+        // worker_real[i] = 0;
+      // for(int i=0; i < gridpoints_per_worker; i++)
+        // worker_imag[i] = 0;
+      // for(int i=0; i < gridpoints_per_worker; i++)
+        // worker_iterations[i] = process_Rank;
 
       MPI_Send(worker_real, // initial address
           gridpoints_per_worker, // number of elements to send
