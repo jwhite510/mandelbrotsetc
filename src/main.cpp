@@ -118,57 +118,9 @@ struct Application
     int colorvalue = 0;
     while (window->isOpen())
     {
-      sf::Event event;
-      while (window->pollEvent(event))
-      {
-        if (event.type == sf::Event::Closed)
-          window->close();
-        if(event.type == sf::Event::MouseButtonPressed) {
-          cout << "mouse pressed" << endl;
-          mouseDragging = 1;
-          // set the mouse clicked location
-          sf::Vector2i position = sf::Mouse::getPosition();
-          mouse_down_col = position.x;
-          mouse_down_row = position.y;
-        }
-        if(event.type == sf::Event::MouseButtonReleased) {
-          mouseDragging = 0;
-          cout << "mouse released" << endl;
-          center_x += delta_linspace_x;
-          center_y += delta_linspace_y;
-          delta_linspace_x = 0;
-          delta_linspace_y = 0;
-        }
-        if(event.type == sf::Event::MouseWheelScrolled) {
-          cout << "mouse scrolling" << endl;
-          cout << event.mouseWheelScroll.delta << endl;
-          double deltazoom = ((double)event.mouseWheelScroll.delta / 10);
-          double zoomlevel = 1 + deltazoom;
-          std::cout << "deltazoom" << " => " << deltazoom << std::endl;
-          x_span *= zoomlevel;
-        }
-
-      }
-      // update pixels
-      if(colorvalue >= 255)
-        colorvalue = 0;
-      colorvalue++;
-
-
-      if(mouseDragging) {
-        sf::Vector2i position = sf::Mouse::getPosition();
-        // cout << "x" << position.x << endl;
-        // cout << "y" << position.y << endl;
-        int delta_col = position.x - mouse_down_col;
-        int delta_row = position.y - mouse_down_row;
-
-        delta_linspace_x = x_span * ((double)delta_row / (double)W);
-        delta_linspace_y = x_span * ((double)delta_col / (double)H);
-
-      }
+      CaptureEvents();
       // std::cout << "x_span" << " => " << x_span << std::endl;
-      Linspace(x, -(x_span/2)-delta_linspace_x-center_x, (x_span/2)-delta_linspace_x-center_x, W);
-      Linspace(y, -(x_span/2)-delta_linspace_y-center_y, (x_span/2)-delta_linspace_y-center_y, H);
+      DrawCoordinateSpace();
 
       // double max_mandelrot = 0;
       for(int i=0; i < W; i++)
@@ -188,16 +140,63 @@ struct Application
           (*pixelgrid)(i,j,2) = iterations;
           (*pixelgrid)(i,j,3) = 255;
         }
-      // std::cout << "max_mandelrot" << " => " << max_mandelrot << std::endl;
-
       // draw on screen
+      DrawPixels();
 
+    }
+  }
+  void CaptureEvents()
+  {
+    sf::Event event;
+    while (window->pollEvent(event))
+    {
+      if (event.type == sf::Event::Closed)
+        window->close();
+      if(event.type == sf::Event::MouseButtonPressed) {
+        cout << "mouse pressed" << endl;
+        mouseDragging = 1;
+        // set the mouse clicked location
+        sf::Vector2i position = sf::Mouse::getPosition();
+        mouse_down_col = position.x;
+        mouse_down_row = position.y;
+      }
+      if(event.type == sf::Event::MouseButtonReleased) {
+        mouseDragging = 0;
+        cout << "mouse released" << endl;
+        center_x += delta_linspace_x;
+        center_y += delta_linspace_y;
+        delta_linspace_x = 0;
+        delta_linspace_y = 0;
+      }
+      if(event.type == sf::Event::MouseWheelScrolled) {
+        cout << "mouse scrolling" << endl;
+        cout << event.mouseWheelScroll.delta << endl;
+        double deltazoom = ((double)event.mouseWheelScroll.delta / 10);
+        double zoomlevel = 1 + deltazoom;
+        std::cout << "deltazoom" << " => " << deltazoom << std::endl;
+        x_span *= zoomlevel;
+      }
+    }
+    if(mouseDragging) {
+      sf::Vector2i position = sf::Mouse::getPosition();
+      int delta_col = position.x - mouse_down_col;
+      int delta_row = position.y - mouse_down_row;
+
+      delta_linspace_x = x_span * ((double)delta_row / (double)W);
+      delta_linspace_y = x_span * ((double)delta_col / (double)H);
+    }
+  }
+  void DrawCoordinateSpace()
+  {
+    Linspace(x, -(x_span/2)-delta_linspace_x-center_x, (x_span/2)-delta_linspace_x-center_x, W);
+    Linspace(y, -(x_span/2)-delta_linspace_y-center_y, (x_span/2)-delta_linspace_y-center_y, H);
+  }
+  void DrawPixels()
+  {
       texture->update((*pixelgrid).pixels);
-
       window->clear();
       window->draw(*sprite);
       window->display();
-    }
   }
   ~Application()
   {
