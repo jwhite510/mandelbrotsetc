@@ -194,7 +194,7 @@ int main()
   const int number_of_workers = size_Of_Cluster -1;
 
   if(W % number_of_workers != 0) {
-    cout << "choose a process number that is divisible by " << number_of_workers << endl;
+    cout << "choose a computational grid number that is divisible by " << number_of_workers << endl;
     MPI_Finalize();
     return 1;
   }
