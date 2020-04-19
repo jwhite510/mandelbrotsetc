@@ -169,8 +169,8 @@ struct Application
   ~Application()
   {
     std::cout << "application destructor called" << std::endl;
-    delete x;
-    delete y;
+    delete [] x;
+    delete [] y;
     delete window;
     delete pixelgrid;
     delete texture;
