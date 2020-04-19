@@ -1,6 +1,7 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <complex>
+#include <mpi.h>
 
 using namespace std;
 
@@ -88,10 +89,10 @@ struct Application
   double delta_linspace_x;
   double delta_linspace_y;
 
-  Application()
+  Application(int W_in)
   {
-    W = 600;
-    H = 600; // you can change this to full window size later
+    W = W_in;
+    H = W_in; // you can change this to full window size later
 
     delta_linspace_x = 0;
     delta_linspace_y = 0;
@@ -182,6 +183,27 @@ struct Application
 int main()
 {
 
+  // computational grid parameter
+  const int W = 600;
+
+  // MPI parameters
+  int process_Rank, size_Of_Cluster;
+  MPI_Init(NULL, NULL);
+  MPI_Comm_size(MPI_COMM_WORLD, &size_Of_Cluster);
+  MPI_Comm_rank(MPI_COMM_WORLD, &process_Rank);
+  const int number_of_workers = size_Of_Cluster -1;
+
+  if(W % size_Of_Cluster != 0) {
+    cout << "choose a process number that is divisible by " << process_Rank << endl;
+    MPI_Finalize();
+    return 1;
+  }
+
+  std::cout << "process_Rank" << " => " << process_Rank << std::endl;
+
+  MPI_Finalize();
+  return 0;
+
   // initialize MPI
   if(process_Rank == 0)
   {
@@ -196,26 +218,28 @@ int main()
     // malloc needed memory for each thread
   }
 
-  for(...) {
-    // sync
-    if(process_Rank == 0)
-    {
-      // transfer coordinates to workers
+  return 0;
 
-      // receive data from workers
+  // for(...) {
+    // // sync
+    // if(process_Rank == 0)
+    // {
+      // // transfer coordinates to workers
 
-      // update application
-    }
-    if(process_Rank != 0)
-    {
-      // receive the coordinates
-      // calculate values for each point
-      // send to process 0
-    }
-  }
+      // // receive data from workers
+
+      // // update application
+    // }
+    // if(process_Rank != 0)
+    // {
+      // // receive the coordinates
+      // // calculate values for each point
+      // // send to process 0
+    // }
+  // }
 
 
-  Application app;
+  Application app(600);
   while(app.window->isOpen())
   {
     // capture mouse events
