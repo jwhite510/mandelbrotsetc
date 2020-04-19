@@ -4,31 +4,33 @@
 
 using namespace std;
 
-float mandelbrot(float real, float imaginary)
+void mandelbrot(float c_real, float c_imaginary, int &iterations, float &real, float &imag)
 {
-  // cout << "calculate mandelbrot" << endl;
-  // std::cout << "real" << " => " << real << std::endl;
-  // std::cout << "imaginary" << " => " << imaginary << std::endl;
 
-  complex<float> z = complex<float>(real, imaginary);
-  complex<float> c = complex<float>(real, imaginary);
+  const int num_iterations = 400;
+  const float max_radius = 10000;
 
-  float average_delta = 0;
-  float delta = 0;
-  int n_iterations = 10;
-  for(int i=0; i < n_iterations; i++) {
-    z = pow(z,2) + c;
-    delta = abs(z) - delta;
-    average_delta += delta;
+
+  complex<float> z = complex<float>(0,0);
+  complex<float> z_next = complex<float>(0,0);
+  const complex<float> c = complex<float>(c_real, c_imaginary);
+
+  iterations = 0;
+  while(iterations < num_iterations) {
+    z_next = pow(z,2) + c;
+    if(abs(z_next) > max_radius)
+      break;
+    z = z_next;
+    iterations++;
   }
-  average_delta /= n_iterations;
-  // std::cout << "average_delta" << " => " << average_delta << std::endl;
 
-  return abs(average_delta);
+  // decrease error
+  for(int e=0; e < 4; e++)
+    z = pow(z,2) + c;
 
-  // if(abs(average_delta) > 10 || isnan(average_delta))
-    // return 0;
-  // return 1;
+  real = z.real();
+  imag = z.imag();
+
 }
 void Linspace(float* arr, float begin, float end, int N)
 {
@@ -88,8 +90,8 @@ struct Application
 
   Application()
   {
-    W = 900;
-    H = 900; // you can change this to full window size later
+    W = 600;
+    H = 600; // you can change this to full window size later
 
     delta_linspace_x = 0;
     delta_linspace_y = 0;
@@ -140,9 +142,10 @@ struct Application
         if(event.type == sf::Event::MouseWheelScrolled) {
           cout << "mouse scrolling" << endl;
           cout << event.mouseWheelScroll.delta << endl;
-          float deltazoom = ((float)event.mouseWheelScroll.delta / 10);
+          float deltazoom = ((float)event.mouseWheelScroll.delta / 100);
+          float zoomlevel = 1 + deltazoom;
           std::cout << "deltazoom" << " => " << deltazoom << std::endl;
-          x_span += deltazoom;
+          x_span *= zoomlevel;
         }
 
       }
@@ -171,14 +174,18 @@ struct Application
       for(int i=0; i < W; i++)
         for(int j=0; j < H; j++) {
           // calculate divergence for mandelbrot set
-          float m = mandelbrot(x[i], y[j]);
-          // if(m > max_mandelrot && !isnan(m) && !isinf(m)) {
-            // max_mandelrot = m; // this is useless
-          // }
+          int iterations;
+          float real;
+          float imag;
+          mandelbrot(x[i], y[j],
+              iterations, // OUT
+              real, // OUT
+              imag); // OUT
 
-          (*pixelgrid)(i,j,0) = 255* m;
-          (*pixelgrid)(i,j,1) = 100*m;
-          (*pixelgrid)(i,j,2) = 0;
+
+          (*pixelgrid)(i,j,0) = real;
+          (*pixelgrid)(i,j,1) = imag;
+          (*pixelgrid)(i,j,2) = iterations;
           (*pixelgrid)(i,j,3) = 255;
         }
       // std::cout << "max_mandelrot" << " => " << max_mandelrot << std::endl;
