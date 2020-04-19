@@ -184,7 +184,7 @@ int main()
 {
 
   // computational grid parameter
-  const int W = 256;
+  const int W = 512;
 
   // MPI parameters
   int process_Rank, size_Of_Cluster;
@@ -294,12 +294,28 @@ int main()
                 MPI_COMM_WORLD,
                 MPI_STATUS_IGNORE
                 );
+            MPI_Recv(worker_imag_buffer,
+                gridpoints_per_worker, // number of elements received
+                MPI_DOUBLE, // type of data being received
+                current_worker, // rank of sender
+                1, // message tag
+                MPI_COMM_WORLD,
+                MPI_STATUS_IGNORE
+                );
+            MPI_Recv(worker_iterations_buffer,
+                gridpoints_per_worker, // number of elements received
+                MPI_DOUBLE, // type of data being received
+                current_worker, // rank of sender
+                1, // message tag
+                MPI_COMM_WORLD,
+                MPI_STATUS_IGNORE
+                );
             buffer_index = 0;
             current_worker ++;
           }
           (*mapp->pixelgrid)(i,j,0) = worker_real_buffer[buffer_index]*20;
-          (*mapp->pixelgrid)(i,j,1) = 0;
-          (*mapp->pixelgrid)(i,j,2) = 0;
+          (*mapp->pixelgrid)(i,j,1) = worker_imag_buffer[buffer_index]*20;
+          (*mapp->pixelgrid)(i,j,2) = worker_iterations_buffer[buffer_index]*20;
           (*mapp->pixelgrid)(i,j,3) = 255;
           // cout << "setting value:" << worker_real_buffer[buffer_index] << endl;
           buffer_index++;
@@ -336,9 +352,27 @@ int main()
 
       // send data to master
       for(int i=0; i < gridpoints_per_worker; i++)
-        worker_real[i] = process_Rank;
+        worker_real[i] = 0;
+      for(int i=0; i < gridpoints_per_worker; i++)
+        worker_imag[i] = 0;
+      for(int i=0; i < gridpoints_per_worker; i++)
+        worker_iterations[i] = process_Rank;
 
       MPI_Send(worker_real, // initial address
+          gridpoints_per_worker, // number of elements to send
+          MPI_DOUBLE, // type of data
+          0, // rank of reveiver
+          1, // message tag
+          MPI_COMM_WORLD
+          );
+      MPI_Send(worker_imag, // initial address
+          gridpoints_per_worker, // number of elements to send
+          MPI_DOUBLE, // type of data
+          0, // rank of reveiver
+          1, // message tag
+          MPI_COMM_WORLD
+          );
+      MPI_Send(worker_iterations, // initial address
           gridpoints_per_worker, // number of elements to send
           MPI_DOUBLE, // type of data
           0, // rank of reveiver
