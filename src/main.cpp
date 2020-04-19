@@ -77,7 +77,7 @@ struct Application
   int center_row_delta;
   int mouse_down_col;
   int mouse_down_row;
-  int x_span;
+  float x_span;
   float* x;
   float* y;
   float delta_linspace_x;
@@ -134,6 +134,14 @@ struct Application
           delta_linspace_x = 0;
           delta_linspace_y = 0;
         }
+        if(event.type == sf::Event::MouseWheelScrolled) {
+          cout << "mouse scrolling" << endl;
+          cout << event.mouseWheelScroll.delta << endl;
+          float deltazoom = ((float)event.mouseWheelScroll.delta / 10);
+          std::cout << "deltazoom" << " => " << deltazoom << std::endl;
+          x_span += deltazoom;
+        }
+
       }
       // update pixels
       if(colorvalue >= 255)
@@ -152,13 +160,7 @@ struct Application
         delta_linspace_y = x_span * ((float)delta_col / (float)H);
 
       }
-
-      // make linspace from new_center_row, new_center_row
-      std::cout << "delta_linspace_x" << " => " << delta_linspace_x << std::endl;
-      std::cout << "center_x" << " => " << center_x << std::endl;
-      std::cout << "delta_linspace_y" << " => " << delta_linspace_y << std::endl;
-      std::cout << "center_y" << " => " << center_y << std::endl;
-
+      std::cout << "x_span" << " => " << x_span << std::endl;
       Linspace(x, -(x_span/2)-delta_linspace_x-center_x, (x_span/2)-delta_linspace_x-center_x, W);
       Linspace(y, -(x_span/2)-delta_linspace_y-center_y, (x_span/2)-delta_linspace_y-center_y, H);
 
