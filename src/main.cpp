@@ -263,11 +263,15 @@ int main()
     worker_imag = new double[gridpoints_per_worker];
   }
 
-  for(int i=0; i < 100; i++)
+  for(int i=0; i < 10; i++)
   {
     // begin calculation
     if(process_Rank == 0)
     {
+      cout << "i:" << i << endl;
+      cout << "==========" << endl;
+      auto iteration_start = high_resolution_clock::now();
+      std::cout << "gridpoints_per_worker" << " => " << gridpoints_per_worker << std::endl;
       // send coordinate space to workers
       mapp->CaptureEvents();
       mapp->DrawCoordinateSpace();
@@ -283,6 +287,8 @@ int main()
           if(buffer_index == gridpoints_per_worker) {
             // buffer is full, send it to worker
             // std::cout << "resetting buffer index to 0, send to worker " << current_worker << endl;
+
+            auto startsendingtime = high_resolution_clock::now();
             MPI_Send(worker_x_buffer, // initial address
                 gridpoints_per_worker, // number of elements to send
                 MPI_DOUBLE, // type of data
@@ -297,6 +303,10 @@ int main()
                 1, // message tag
                 MPI_COMM_WORLD
                 );
+            cout << "master waited " <<
+              duration_cast<milliseconds>(high_resolution_clock::now() - startsendingtime).count() <<
+              "(ms) to send work to process" << current_worker << endl;
+
 
             buffer_index = 0;
             current_worker++;
@@ -310,6 +320,7 @@ int main()
         for(int j=0; j < mapp->H; j++) {
           if(buffer_index == gridpoints_per_worker) {
             // receive data
+            auto startreceiving = high_resolution_clock::now();
             MPI_Recv(worker_real_buffer,
                 gridpoints_per_worker, // number of elements received
                 MPI_DOUBLE, // type of data being received
@@ -334,6 +345,12 @@ int main()
                 MPI_COMM_WORLD,
                 MPI_STATUS_IGNORE
                 );
+            cout << "master waited " <<
+              duration_cast<milliseconds>(high_resolution_clock::now() - startreceiving).count() <<
+              "(ms) to receive work from process" << current_worker << endl;
+
+
+
             buffer_index = 0;
             current_worker ++;
           }
@@ -356,6 +373,9 @@ int main()
         avg_drawtime_counter = 0;
       }
       mapp->DrawPixels(avg_drawtime);
+      auto iteration_end = high_resolution_clock::now();
+      cout << "entire iteration took: " << duration_cast<milliseconds>(iteration_end-iteration_start).count() << " (ms)" << endl;
+
     }
     if(process_Rank != 0)
     {
@@ -376,6 +396,8 @@ int main()
           MPI_COMM_WORLD,
           MPI_STATUS_IGNORE
           );
+      // cout << "worker " << process_Rank << " received data" << endl;
+      auto receivedtime = high_resolution_clock::now();
       // cout << "worker" << process_Rank << "received data from master" << endl;
       // for(int i=0; i < 10; i++)
       //   cout << worker_x[i] << "  ";
@@ -384,20 +406,34 @@ int main()
       //   cout << worker_x[i] << "  ";
 
       // cout << endl;
-      for(int i=0; i < gridpoints_per_worker; i++) {
+      // for(int i=0; i < gridpoints_per_worker; i++) {
 
-        int iterations;
-        double real;
-        double imag;
+        // int iterations;
+        // double real;
+        // double imag;
 
-        mandelbrot(worker_x[i], worker_y[i],
-            iterations, // OUT
-            real, // OUT
-            imag); // OUT
-        worker_real[i] = real;
-        worker_imag[i] = imag;
-        worker_iterations[i] = iterations;
-      }
+        // mandelbrot(worker_x[i], worker_y[i],
+            // iterations, // OUT
+            // real, // OUT
+            // imag); // OUT
+        // worker_real[i] = real;
+        // worker_imag[i] = imag;
+        // worker_iterations[i] = iterations;
+      // }
+
+      // // do work
+      int wait_time = 1000; // milliseconds
+      // wait time scales with gridpoints_per_worker
+      wait_time = gridpoints_per_worker / 5000;
+      auto startfakeworktime = high_resolution_clock::now();
+      while( duration_cast<milliseconds>(high_resolution_clock::now() - startfakeworktime).count() < wait_time );
+
+
+
+      // auto workfinishedtime = high_resolution_clock::now();
+      // cout << "process" << process_Rank << " finished work in: " <<
+        // duration_cast<milliseconds>(workfinishedtime - receivedtime).count() <<
+        // "(ms)" << endl;
 
       // // send data to master
       // for(int i=0; i < gridpoints_per_worker; i++)
@@ -428,6 +464,9 @@ int main()
           1, // message tag
           MPI_COMM_WORLD
           );
+      // cout << "process" << process_Rank << " waited: " <<
+        // duration_cast<milliseconds>(high_resolution_clock::now() - workfinishedtime).count() <<
+        // "(ms) to send to master" << endl;
     }
   }
 
