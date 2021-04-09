@@ -203,7 +203,7 @@ int main()
             imag); // OUT
 
         (*app.pixelgrid)(i,j,0) = real;
-        (*app.pixelgrid)(i,j,1) = imag;
+        (*app.pixelgrid)(i,j,1) = imag+iterations;
         (*app.pixelgrid)(i,j,2) = iterations;
         (*app.pixelgrid)(i,j,3) = 255;
       }
