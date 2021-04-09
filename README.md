@@ -7,8 +7,7 @@ z<sub>n+1</sub> = z<sub>n</sub><sup>2</sup> + c
 is calculated iteratively, and the point in the complex grid is colorized by the rate of divergence of the absolute value of z<sub>n</sub>
 
 
-<img src="pictures/3.png">
-<img src="pictures/4.png">
+<img src="pictures/mandelbrotzoom.gif">
 
 # Dependencies
 SFML 
